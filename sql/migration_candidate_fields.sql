@@ -1,0 +1,3 @@
+ALTER TABLE candidates
+  ADD COLUMN deskripsi TEXT NULL,
+  ADD COLUMN foto_url VARCHAR(500) NULL;
