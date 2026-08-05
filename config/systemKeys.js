@@ -22,7 +22,6 @@ function getSystemKeys() {
 
   const keys = generateKeyPair();
   fs.writeFileSync(KEYS_FILE, JSON.stringify(keys, null, 2));
-  console.log("🔑 System keypair untuk audit log dibuat di", KEYS_FILE);
   cachedKeys = keys;
   return cachedKeys;
 }

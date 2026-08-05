@@ -3,6 +3,7 @@ const requireAdmin = require("../middleware/requireAdmin");
 const adminSettingsController = require("../controllers/adminSettingsController");
 const adminUserController = require("../controllers/adminUserController");
 const auditLedgerController = require("../controllers/auditLedgerController");
+const benchmarkController = require("../benchmark/BenchmarkController");
 const router = express.Router();
 const auditLogController = require("../controllers/auditLogController");
 
@@ -27,5 +28,9 @@ router.get("/admin/audit-log", requireAdmin, auditLogController.list);
 router.get("/admin/audit-log/filter-options", requireAdmin, auditLogController.filterOptions);
 router.get("/admin/audit-log/export/pdf", requireAdmin, auditLogController.exportPdf);
 router.get("/admin/audit-log/export/excel", requireAdmin, auditLogController.exportExcel);
+
+// ─── Admin: Benchmark ─────────────────────────────────────────────────────────
+router.post("/admin/benchmark/vote-submission", requireAdmin, benchmarkController.runVoteSubmissionBenchmark);
+router.post("/admin/benchmark/rsa-sign", requireAdmin, benchmarkController.runRsaSignBenchmark);
 
 module.exports = router;

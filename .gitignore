@@ -1,3 +1,12 @@
 node_modules/
 .DS_Store
+<<<<<<< HEAD
 .env
+=======
+.env
+coverage/
+benchmark/*.csv
+benchmark/*.json
+validation/*.csv
+validation/*.json
+>>>>>>> agents/refactor-db-config-remove-jest-guard
