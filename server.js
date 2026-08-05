@@ -16,11 +16,11 @@ const explorerRoutes = require("./routes/explorerRoutes");
 const app = express();
 
 const sessionStore = new MySQLStore({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "evoting",
-  port: 3306
+host: process.env.DB_HOST || "localhost",
+user: process.env.DB_USER || "root",
+password: process.env.DB_PASSWORD || "",
+database: process.env.DB_DATABASE || "evoting",
+port: Number(process.env.DB_PORT || 3306)
 });
 
 app.use(bodyParser.json());
@@ -65,14 +65,9 @@ Promise.all([
   app.locals.votingChain = voteChain;
   app.locals.candidateChain = candidateChain;
   app.locals.auditChain = auditChain;
-  console.log("✅ Vote Ledger loaded dari MySQL");
-  console.log("✅ Candidate Ledger loaded dari MySQL");
-  console.log("✅ Audit Ledger loaded dari MySQL");
 
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`Admin panel: http://localhost:${PORT}/admin.html`);
   });
 
 }).catch(err => {
