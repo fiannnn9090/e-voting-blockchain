@@ -19,9 +19,11 @@ const { measureBlockCreationTime } = require('./BlockCreationBenchmarkService');
 const { measureBlockchainVerificationTime } = require('./BlockchainVerificationBenchmarkService');
 
 async function run() {
+  console.log("=== Blockchain Performance Benchmark ===\n");
   const summary = [];
-
+  
   // 1) RSA Benchmark (payload sizes)
+  console.log("[1/4] Running RSA Benchmark...");
   const rsaBasePayload = { user_id: 1, candidate_id: 1, timestamp: '2026-01-01T00:00:00Z' };
   const rsaSizes = [128, 256, 512, 1024];
   const rsaRuns = 50;
@@ -62,6 +64,7 @@ async function run() {
   }
 
   // 2) Merkle Benchmark (transaction counts)
+  console.log("[2/4] Running Merkle Benchmark...");
   const merkleSizes = [10, 50, 100, 250, 500, 1000];
   const merkleRuns = 50;
   const merkleWarmup = 5;
@@ -84,6 +87,7 @@ async function run() {
   }
 
   // 3) Block Creation Benchmark (transaction counts)
+  console.log("[3/4] Running Block Creation Benchmark...");
   const blockCreationSizes = [10, 50, 100, 250, 500, 1000];
   const blockCreationRuns = 50;
   const blockCreationWarmup = 5;
@@ -102,6 +106,7 @@ async function run() {
   }
 
   // 4) Blockchain Verification Benchmark (block counts)
+  console.log("[4/4] Running Blockchain Verification Benchmark...");
   const chainSizes = [10, 50, 100, 250, 500, 1000];
   const chainRuns = 50;
   const chainWarmup = 5;
@@ -163,30 +168,25 @@ async function run() {
   }
 
   fs.writeFileSync('benchmark/benchmark_summary.md', mdLines.join('\n'), 'utf8');
+  console.log("\nBenchmark selesai.\n");
+  console.log("Output:");
+  console.log(" - benchmark/benchmark_summary.csv");
+  console.log(" - benchmark/benchmark_summary.json");
+  console.log(" - benchmark/benchmark_summary.md");
 
   // Attempt to gracefully close any resources that may keep the Node event loop alive.
   // The shared DB connection (config/db) uses a persistent mysql connection that may
   // have been initialized indirectly by required modules. If present, call end()
   // and await its completion so the process can exit naturally.
-  async function closeResources() {
-    try {
-      const db = require('../config/db');
-      if (db && typeof db.end === 'function') {
-        await new Promise((resolve) => {
-          try {
-            db.end(() => resolve());
-          } catch (e) {
-            // Some mysql clients may throw synchronously; ignore and resolve.
-            resolve();
-          }
-        });
-      }
-    } catch (e) {
-      // ignore errors during cleanup
-    }
-  }
+try {
+  const db = require('../config/db');
 
-  await closeResources();
+  if (typeof db.closeConnection === 'function') {
+    await db.closeConnection();
+  }
+} catch (_) {
+  // ignore cleanup error
+}
 
 }
 
