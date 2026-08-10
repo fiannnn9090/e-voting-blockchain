@@ -6,7 +6,13 @@ function getAuditLogs(opts, callback) {
   const {
     action, username, dateFrom, dateTo, search,
     sortBy = "timestamp", sortDir = "DESC",
-    page = 1, limit = 50
+    page = 1, limit = 50,
+    // maxAllowedLimit: internal callers (mis. getAuditLogsForExport) may
+    // override this limit to fetch more rows for full document export.
+    // External/user-facing requests (endpoint list, via req.query) always
+    // remain capped at the default 500 -- this parameter is never derived
+    // from req.query, so it cannot be influenced by an untrusted client.
+    maxAllowedLimit = 500
   } = opts;
 
   const where = [];
@@ -25,7 +31,7 @@ function getAuditLogs(opts, callback) {
   const whereClause = where.length > 0 ? "WHERE " + where.join(" AND ") : "";
   const safeSortBy = SORTABLE_COLUMNS.includes(sortBy) ? sortBy : "timestamp";
   const safeSortDir = sortDir === "ASC" ? "ASC" : "DESC";
-  const safeLimit = Math.min(parseInt(limit) || 50, 500);
+  const safeLimit = Math.min(parseInt(limit) || 50, maxAllowedLimit);
   const offset = (Math.max(parseInt(page) || 1, 1) - 1) * safeLimit;
 
   db.query(`SELECT COUNT(*) AS total FROM audit_logs ${whereClause}`, params, (err, countResult) => {
@@ -50,7 +56,9 @@ function getDistinctActions(callback) {
 }
 
 function getAuditLogsForExport(opts, callback) {
-  getAuditLogs({ ...opts, page: 1, limit: 5000 }, (err, result) => {
+  // Pemanggil tepercaya (internal) -- boleh melewati batas pagination 500
+  // yang berlaku untuk endpoint list (input pengguna via req.query).
+  getAuditLogs({ ...opts, page: 1, limit: 5000, maxAllowedLimit: 5000 }, (err, result) => {
     if (err) return callback(err);
     callback(null, result.rows);
   });

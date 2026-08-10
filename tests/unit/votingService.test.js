@@ -1,6 +1,12 @@
 jest.mock('../../config/db');
 const db = require('../../config/db');
 const votingService = require('../../services/votingService');
+const { generateKeyPair } = require('../../blockchain/keys');
+
+// Fixture RSA keypair asli (bukan dummy string) supaya signData() pada
+// castVote() bisa benar-benar berhasil, dan jalur eksekusi bisa mencapai
+// votingChain.addBlock() saat diuji.
+const { privateKey: validPrivateKey, publicKey: validPublicKey } = generateKeyPair();
 
 beforeEach(() => {
   db.query = jest.fn((sql, params, cb) => {
@@ -142,9 +148,18 @@ describe('votingService negative and edge cases', () => {
       return safeCb(null, []);
     });
 
-    const req = { session: { user: { id: 4, public_key: 'pk', private_key: 'sk' , destroy: () => {} } }, body: { candidate_id: 1 } };
+    const req = {
+      session: {
+        user: { id: 4, public_key: validPublicKey, private_key: validPrivateKey, destroy: () => {} }
+      },
+      body: { candidate_id: 1 }
+    };
     const votingChain = { chain: [], addBlock: jest.fn(() => { throw new Error('boom'); }) };
     const res = await votingService.castVote(req, votingChain, null);
+
+    // Pastikan jalur eksekusi benar-benar mencapai addBlock() -- bukan gagal
+    // lebih awal di signData() akibat private key yang tidak valid.
+    expect(votingChain.addBlock).toHaveBeenCalledTimes(1);
     expect(res.message).toMatch(/Vote tersimpan tapi gagal catat di blockchain/);
   });
 });

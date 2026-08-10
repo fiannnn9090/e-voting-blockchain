@@ -1,17 +1,17 @@
 cff-version: 1.2.0
 
-title: "[Repository Title]"
-version: "0.0.0"
+title: "e-voting-blockchain"
+version: "0.0.1"
 date-released: "2026-01-01"
 
 description: "Implementation artifact for an undergraduate research project on Blockchain-based e-voting with Merkle Trees, RSA signatures, and an Audit Ledger. Replace placeholders with actual bibliographic metadata."
 
 authors:
-  - family-names: "Surname"
-    given-names: "GivenName"
-    affiliation: "[University Name]"
+  - family-names: "Aliffian ALham Maesanjaya"
+    given-names: "Fian"
+    affiliation: "Dian Nuswantoro University, Indonesia"
 
-repository-code: "https://github.com/your-username/your-repo"
+repository-code: "https://github.com/fiannnn9090/e-voting-blockchain"
 
 license: "MIT"
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 const { runValidation } = require('./IntegrityValidationService');
 const { generateReports } = require('./ValidationReportGenerator');
 const path = require('path');
@@ -33,6 +32,12 @@ async function main() {
     console.error('Failed to write reports:', e && e.stack ? e.stack : e);
   }
 
+  // Tutup koneksi MySQL singleton -- CLI tool ini berumur pendek dan harus
+  // keluar bersih setelah selesai, tidak seperti Express server yang hidup
+  // terus-menerus. Tanpa ini, socket MySQL tetap terbuka dan event loop
+  // Node tidak pernah kosong (proses menggantung, harus Ctrl+C manual).
+  const db = require('../config/db');
+  await db.closeConnection();
 }
 
 main().catch(err => {

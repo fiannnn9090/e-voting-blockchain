@@ -99,7 +99,13 @@ function castVote(req, votingChain, auditChain) {
 
                     req.session.user.sudah_vote = true;
                     resolve({ message: "Voting berhasil! 🔥" });
-                    setTimeout(() => req.session.destroy(), 3000);
+                    // .unref() -- timer ini tidak esensial bagi proses utama (hanya
+                    // menghancurkan sesi setelah jeda 3 detik), sehingga tidak perlu
+                    // menahan event loop tetap hidup jika tidak ada pekerjaan lain.
+                    const destroySessionTimer = setTimeout(() => {
+                      req.session.destroy();
+                    }, 3000);
+                    destroySessionTimer.unref();
                   } catch (e) {
                     console.error("Blockchain error:", e);
                     resolve({ message: "Vote tersimpan tapi gagal catat di blockchain" });

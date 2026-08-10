@@ -52,7 +52,11 @@ function loginUser(req, auditChain) {
       }
       req.session.user = user;
       await recordAuditLog(auditChain, req, "LOGIN_USER");
-      resolve({ message: "Login berhasil", user: result[0] });
+      // Jangan kirim seluruh baris DB ke klien -- password (hash) dan
+      // private_key (RSA) hanya dipakai server-side (signing dilakukan di
+      // votingService.js, bukan di browser) dan tidak boleh bocor ke response API.
+      const { id, nim: userNim, nama, sudah_vote } = user;
+      resolve({ message: "Login berhasil", user: { id, nim: userNim, nama, sudah_vote } });
     });
   });
 }

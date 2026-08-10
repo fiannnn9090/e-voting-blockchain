@@ -20,6 +20,13 @@
       "blockchain/**/*.js",
       "services/votingService.js",
       "services/auditLogService.js",
+      "services/candidateLedgerService.js",
+      "services/candidateProjectionService.js",
+      "services/authService.js",
+      "config/db.js",
+      "controllers/auditLedgerController.js",
+      "controllers/auditLogController.js",
+      "controllers/explorerController.js",
       "blockchain/merkle.js",
       "blockchain/keys.js",
       "utils/*.js"

@@ -40,4 +40,61 @@ describe('Blockchain DB interactions (unit)', () => {
     await expect(bc.saveBlock(block)).resolves.toBeUndefined();
     expect(db.query).toHaveBeenCalled();
   });
+
+  test('resetChain deletes all rows and resets chain to a single genesis block', async () => {
+    const bc = new Blockchain('test_blocks');
+    // simulasikan chain lama berisi beberapa block sebelum direset
+    bc.chain = [
+      new Block(0, 1, 'Genesis', '0'),
+      new Block(1, 2, { voter: 1, candidate: 1 }, 'prevhash')
+    ];
+
+    const deleteCalls = [];
+    db.query = jest.fn((sql, params, cb) => {
+      if (typeof params === 'function') { cb = params; params = []; }
+      const safeCb = (...args) => { if (typeof cb === 'function') return cb(...args); };
+
+      if (sql.startsWith('DELETE FROM')) {
+        deleteCalls.push(sql);
+        return safeCb(null); // DELETE berhasil
+      }
+      if (sql.startsWith('INSERT INTO')) {
+        return safeCb(null); // saveBlock(genesis) berhasil
+      }
+      return safeCb(null, []);
+    });
+
+    await bc.resetChain();
+
+    expect(deleteCalls.length).toBe(1);
+    expect(deleteCalls[0]).toContain('test_blocks');
+    expect(bc.chain.length).toBe(1);
+    expect(bc.chain[0].index).toBe(0);
+    expect(bc.chain[0].data).toBe('Genesis Block');
+  });
+
+  test('resetChain rejects when DELETE query fails, chain is left untouched', async () => {
+    const bc = new Blockchain('test_blocks');
+    const originalChain = [
+      new Block(0, 1, 'Genesis', '0'),
+      new Block(1, 2, { voter: 1, candidate: 1 }, 'prevhash')
+    ];
+    bc.chain = originalChain;
+
+    db.query = jest.fn((sql, params, cb) => {
+      if (typeof params === 'function') { cb = params; params = []; }
+      const safeCb = (...args) => { if (typeof cb === 'function') return cb(...args); };
+
+      if (sql.startsWith('DELETE FROM')) {
+        return safeCb(new Error('DB connection lost'));
+      }
+      return safeCb(null, []);
+    });
+
+    await expect(bc.resetChain()).rejects.toThrow('DB connection lost');
+    // chain tidak boleh berubah karena resetChain gagal sebelum sempat
+    // mengganti this.chain (fail-safe: gagal total, bukan gagal sebagian)
+    expect(bc.chain).toBe(originalChain);
+    expect(bc.chain.length).toBe(2);
+  });
 });

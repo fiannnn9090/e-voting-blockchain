@@ -193,12 +193,10 @@ Automated tests use Jest. See `TESTING.md` for how to run tests and interpret co
 
 If you use this repository for academic purposes, please cite:
 
-Author: [Your Name]
+Author: Aliffian Alham Maesannjaya
 Title: [Thesis / Paper Title]
-University: [University Name]
-Year: [Year]
-
-(Replace placeholders with actual bibliographic information when available.)
+University: Dian Nuswantoro University, Indonesia
+Year: 2026
 
 ---
 
